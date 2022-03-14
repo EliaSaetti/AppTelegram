@@ -11,4 +11,14 @@ package Telegram;
  */
 public class CCoordinate {
     
+    String longi;
+    String lati;
+    
+    public CCoordinate(){
+        longi = "";
+        lati = "";
+    }
+    
+    
+        
 }

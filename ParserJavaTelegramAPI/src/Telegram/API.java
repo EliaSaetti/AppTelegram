@@ -7,16 +7,27 @@ package Telegram;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.json.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -52,7 +63,48 @@ public class API {
             is.close();
         }
     }
-    
-    
-    
+
+    public void setUpXML(String luogo) throws FileNotFoundException, IOException {
+        BufferedReader in = null;
+        PrintWriter out;
+
+        out = new PrintWriter("valute.xml");
+        URL url;
+        // System.setProperty("java.protocol.handler.pkgs", "com.sun.net.ssl.internal.www.protocol");
+        // url =  new URL("https://www.agenziaentrate.gov.it/portale/documents/20143/296358/Provvedimento+30+marzo+2017+Distributori+automatici_Allegato+Api+REST+Dispositivi+%28v.3.0%29.pdf/7cfe447f-5823-5873-e55d-d3fa825877fd");
+        url = new URL("https://nominatim.openstreetmap.org/search?q=" + luogo + "&format=xml&addressdetails=1");
+        in = new BufferedReader(new InputStreamReader(url.openStream()));
+        String line;
+        while ((line = in.readLine()) != null) {
+            out.println(line);
+        }
+        in.close();
+        out.close();
+
+        CCoordinate c = new CCoordinate();
+        List<CCoordinate> dati = new ArrayList<>();
+        String myFileName = "valute.xml";
+        dati = c.parseDocument(myFileName);
+
+    }
+
+    public void getCoordinates(String filename) throws ParserConfigurationException, SAXException, IOException {
+        String longi, lati;
+        List<CCoordinate> tmp = new ArrayList();
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.parse(new File(filename));
+
+        NodeList nList = document.getElementsByTagName("place");
+
+        NodeList childs = nList.item(0).getChildNodes();
+        for (int j = 1; j < childs.getLength(); j++) {
+            CCoordinate objtmp = new CCoordinate(childs.item(j).getNodeName(), childs.item(j).getTextContent());
+            tmp.add(objtmp);
+
+        }
+        return tmp;
+    }
+
 }
